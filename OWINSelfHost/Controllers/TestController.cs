@@ -13,42 +13,53 @@ namespace OWINSelfHost
         [Route("sync/{id}/{time}"), HttpGet]           
         public string GetValueSync(string id, string time)
         {
-            //Console.WriteLine("from {0}:{1} at {2} sync", id, time, DateTime.Now.ToLongTimeString());
-            //string res = BigJob(id, time).Result;
-            string res = BigJob(id, time, "sync");
+            string res = BigFileIOJob(id, time, "sync");
             return res;
         }
 
         [Route("async/{id}/{time}"), HttpGet]
         public async Task<string> GetValueAsync(string id, string time)
         {
-            //Console.WriteLine("from {0}:{1} at {2} async", id, time, DateTime.Now.ToLongTimeString());
-            //string res = await BigJob(id, time);
-
-            dont think this is working
-            string res = await Task.Run<string>(() => BigJob(id, time, "async"));
+            string res = await Task.Run<string>(() => BigFileIOJob(id, time, "async"));
             return res;
         }
 
-        private string BigJob(string id, string time, string type)
+        private string BigFileIOJob(string id, string time, string type)
         {
-            Console.WriteLine("received {0}:{1} at {2} {3}", id, time, DateTime.Now.ToLongTimeString(), type);
+            string text = "whats the difference between roast chicken and pea soup?  You can roast chicken but ...";
+            for (int i = 0; i < 2000; i++)
+            {
+                string fp = @"c:\temp\" + id + i.ToString() + ".txt";
+                System.IO.File.WriteAllText(fp, text);
+            }
+            for (int i = 0; i < 2000; i++)
+            {
+                string fp = @"c:\temp\" + id + i.ToString() + ".txt";
+                System.IO.File.Delete(fp);
+            }
+            string res = DateTime.Now.ToLongTimeString();
+            res = string.Format("{0}:{1} returning {2} {3}", id, time, res, type);
+            return res;
+        }
+
+        private string BigCpuJob(string id, string time, string type)
+        {
             for (double d = 0; d < 900000000.0; d++)
             {
                 double w = d + 1;
             }
             string res = DateTime.Now.ToLongTimeString();
-            Console.WriteLine("  {0}:{1} returning {2} {3}", id, time, res, type);
+            res = string.Format("{0}:{1} returning {2} {3}", id, time, res, type);
             return res;
         }
 
-        //private async Task<string> BigJob(string id, string time)
-        //{
-        //    await Task.Delay(10000);
-        //    string res = DateTime.Now.ToLongTimeString();
-        //    Console.WriteLine("  from {0}:{1} returning {2} async", id, time, res);
-        //    return res;
-        //}
+        private async Task<string> BigJob(string id, string time)
+        {
+            await Task.Delay(10000);
+            string res = DateTime.Now.ToLongTimeString();
+            Console.WriteLine("  from {0}:{1} returning {2} async", id, time, res);
+            return res;
+        }
 
 
     } 
